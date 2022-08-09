@@ -198,10 +198,9 @@ impl Input {
                 let (lines, next) =
                     self.try_get_until_end_or_type(curr + 1, LineType::CodeBlockDelimited);
 
-                Some((
-                    BlockToken::CodeBlock(lang, Input::format_block_text(lines, formatters)),
-                    next,
-                ))
+                let text: Vec<String> = lines.into_iter().map(|l| l.text).collect();
+
+                Some((BlockToken::CodeBlock(lang, text.join("\n")), next))
             }
             _ => None,
         }
@@ -254,6 +253,8 @@ impl Input {
                 }
                 _ => {
                     let lines = vec![self.lines[curr].clone()];
+
+                    println!("*** {:?}", lines);
 
                     Some((
                         BlockToken::UnorderedListItem(Input::format_block_text(lines, formatters)),

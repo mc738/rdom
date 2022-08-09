@@ -1,3 +1,5 @@
+use rendering::html;
+
 use crate::{
     core::formatting::Formatters,
     parsing::{inline_parser, processing},
@@ -8,6 +10,7 @@ use crate::parsing::block_parser::Input;
 
 pub mod core;
 pub mod parsing;
+pub mod rendering;
 
 fn main() {
     //let t1 = "Hello, ***World!***".to_string();
@@ -28,7 +31,7 @@ fn main() {
 
     let input = Input::new(doc);
 
-    let formatters = Formatters::empty();
+    let formatters = Formatters::default();
 
     //println!("{:?}", input);
 
@@ -36,8 +39,10 @@ fn main() {
 
     let blocks = processing::process_tokens(tokens);
 
-    for x in 0..blocks.len() {
-        println!("{:?}", blocks[x]);
+    let rendered = html::render(blocks);
+
+    for x in 0..rendered.len() {
+        println!("{:?}", rendered[x]);
     }
 
     //let _ = blocks.into_iter().map(|b| println!("{:?}", b));

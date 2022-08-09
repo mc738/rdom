@@ -43,11 +43,12 @@ fn create_paragraph_block(s: String, style: Style) -> ParagraphBlock {
 }
 
 fn create_code_block(s: String, language: Option<String>, style: Style) -> CodeBlock {
+    println!("{}", s);
     CodeBlock::new(style, s, language)
 }
 
 fn create_image_block(s: String, style: Style) -> ImageBlock {
-    let (alt_text, next1) = inline_parser::read_until_char(&s, ']', false, 1);
+    let (alt_text, next1) = inline_parser::read_until_char(&s, ']', false, 2);
 
     let (source, next2) = inline_parser::read_until_char(&s, ' ', false, next1 + 2);
 
@@ -58,9 +59,10 @@ fn create_image_block(s: String, style: Style) -> ImageBlock {
     let (height, width) = hw.trim().split(',').fold((None, None), |(h, w), x| {
         let mut ss = x.trim().split(':');
 
+        // ss.nth(0) in match because the first ss.nth(0) consumes item 0.
         match ss.nth(0) {
-            Some("height") => (ss.nth(1).map(|v| v.to_string()), w),
-            Some("width") => (h, ss.nth(1).map(|v| v.to_string())),
+            Some("height") => (ss.nth(0).map(|v| v.to_string()), w),
+            Some("width") => (h, ss.nth(0).map(|v| v.to_string())),
             _ => (h, w),
         }
     });

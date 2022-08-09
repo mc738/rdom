@@ -3,6 +3,7 @@
 This is a ***TEST***, to try out *parsing*.
 
 This is an example `markdown` document, for testing `rdom` with.
+This should all be one paragraph.
 
 ## Order list
 

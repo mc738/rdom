@@ -1,4 +1,4 @@
-use std::iter::Map;
+use std::collections::HashMap;
 
 #[derive(Debug)]
 pub enum Block {
@@ -66,7 +66,7 @@ pub struct ImageBlock {
 #[derive(Debug)]
 pub enum Style {
     Ref(Vec<String>),
-    Custom(Map<String, String>),
+    Custom(HashMap<String, String>),
     Default,
 }
 
@@ -244,7 +244,7 @@ impl Style {
         Style::Ref(classes)
     }
 
-    pub fn create_custom(values: Map<String, String>) -> Style {
+    pub fn create_custom(values: HashMap<String, String>) -> Style {
         Style::Custom(values)
     }
 
