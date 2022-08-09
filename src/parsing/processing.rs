@@ -43,7 +43,6 @@ fn create_paragraph_block(s: String, style: Style) -> ParagraphBlock {
 }
 
 fn create_code_block(s: String, language: Option<String>, style: Style) -> CodeBlock {
-    println!("{}", s);
     CodeBlock::new(style, s, language)
 }
 

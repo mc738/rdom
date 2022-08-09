@@ -254,8 +254,6 @@ impl Input {
                 _ => {
                     let lines = vec![self.lines[curr].clone()];
 
-                    println!("*** {:?}", lines);
-
                     Some((
                         BlockToken::UnorderedListItem(Input::format_block_text(lines, formatters)),
                         curr,

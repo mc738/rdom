@@ -41,6 +41,13 @@ fn main() {
 
     let rendered = html::render(blocks);
 
+    //println!("<article>\n    {}\n</article>", rendered.join("\n    "));
+
+    //fs::write(
+    //    "/home/max/Projects/example.html",
+    //    format!("<article>\n    {}\n</article>", rendered.join("\n    ")),
+    //);
+
     for x in 0..rendered.len() {
         println!("{:?}", rendered[x]);
     }

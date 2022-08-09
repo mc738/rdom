@@ -57,21 +57,19 @@ fn read_until_control_char(s: &String, from: usize) -> (String, usize) {
     loop {
         match s.chars().nth(i) {
             Some(fc) if is_control_char(fc) => {
-                //println!("Control - {}", fc);
                 break;
             }
             Some(_) => {
                 i = i + 1;
             }
             None => {
-                // plus 1 because this removes 1 normally.
-                i = s.len() + 1;
+                i = s.len();
                 break;
             }
         }
     }
 
-    (s[from..(i - 1)].to_string(), i)
+    (s[from..(i)].to_string(), i)
 }
 
 fn read_until_string(s: &String, pattern: &str, inclusive: bool, from: usize) -> (String, usize) {
