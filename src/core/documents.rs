@@ -1,5 +1,6 @@
 use std::iter::Map;
 
+#[derive(Debug)]
 pub enum Block {
     Header(HeaderBlock),
     Paragraph(ParagraphBlock),
@@ -8,6 +9,7 @@ pub enum Block {
     Image(ImageBlock),
 }
 
+#[derive(Debug)]
 pub enum HeaderLevel {
     H1,
     H2,
@@ -17,6 +19,7 @@ pub enum HeaderLevel {
     H6,
 }
 
+#[derive(Debug)]
 pub struct HeaderBlock {
     pub(crate) style: Style,
     pub(crate) level: HeaderLevel,
@@ -24,28 +27,33 @@ pub struct HeaderBlock {
     pub(crate) indexed: bool,
 }
 
+#[derive(Debug)]
 pub struct ParagraphBlock {
     pub(crate) style: Style,
     pub(crate) content: Vec<InlineContent>,
 }
 
+#[derive(Debug)]
 pub struct CodeBlock {
     pub(crate) style: Style,
-    pub(crate) content: Vec<InlineContent>,
+    pub(crate) content: String,
     pub(crate) language: Option<String>,
 }
 
+#[derive(Debug)]
 pub struct ListBlock {
     pub(crate) ordered: bool,
     pub(crate) style: Style,
     pub(crate) items: Vec<ListItem>,
 }
 
+#[derive(Debug)]
 pub struct ListItem {
     pub(crate) style: Style,
     pub(crate) content: Vec<InlineContent>,
 }
 
+#[derive(Debug)]
 pub struct ImageBlock {
     pub(crate) style: Style,
     pub(crate) source: String,
@@ -150,17 +158,13 @@ impl HeaderBlock {
 }
 
 impl ParagraphBlock {
-    pub fn create(style: Style, content: Vec<InlineContent>) -> ParagraphBlock {
+    pub fn new(style: Style, content: Vec<InlineContent>) -> ParagraphBlock {
         ParagraphBlock { style, content }
     }
 }
 
 impl CodeBlock {
-    pub fn create(
-        style: Style,
-        content: Vec<InlineContent>,
-        language: Option<String>,
-    ) -> CodeBlock {
+    pub fn new(style: Style, content: String, language: Option<String>) -> CodeBlock {
         CodeBlock {
             style,
             content,
@@ -184,6 +188,12 @@ impl ListBlock {
 
     pub fn new_unordered(style: Style, items: Vec<ListItem>) -> ListBlock {
         ListBlock::new(style, false, items)
+    }
+}
+
+impl ListItem {
+    pub fn new(style: Style, content: Vec<InlineContent>) -> ListItem {
+        ListItem { style, content }
     }
 }
 

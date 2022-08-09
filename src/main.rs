@@ -1,4 +1,7 @@
-use crate::{core::formatting::Formatters, parsing::inline_parser};
+use crate::{
+    core::formatting::Formatters,
+    parsing::{inline_parser, processing},
+};
 use std::fs;
 
 use crate::parsing::block_parser::Input;
@@ -7,17 +10,17 @@ pub mod core;
 pub mod parsing;
 
 fn main() {
-    let t1 = "Hello, ***World!***".to_string();
+    //let t1 = "Hello, ***World!***".to_string();
 
-    let t2 = "How are you, `max`?".to_string();
+    //let t2 = "How are you, `max`?".to_string();
 
-    let r1 = inline_parser::parse_inline_content(t1);
+    //let r1 = inline_parser::parse_inline_content(t1);
 
-    let r2 = inline_parser::parse_inline_content(t2);
+    //let r2 = inline_parser::parse_inline_content(t2);
 
-    println!("{:?}", r1);
+    //println!("{:?}", r1);
 
-    println!("{:?}", r2);
+    //println!("{:?}", r2);
 
     let raw = fs::read_to_string("/home/max/Projects/rdom/examples/example1.md").unwrap();
 
@@ -29,9 +32,17 @@ fn main() {
 
     //println!("{:?}", input);
 
-    let blocks = input.parse_blocks(&formatters);
+    let tokens = input.parse_blocks(&formatters);
 
-    println!("{:?}", blocks);
+    let blocks = processing::process_tokens(tokens);
+
+    for x in 0..blocks.len() {
+        println!("{:?}", blocks[x]);
+    }
+
+    //let _ = blocks.into_iter().map(|b| println!("{:?}", b));
+
+    //println!("{:?}", blocks);
 
     //let lt = LineType::new("``` d";
 

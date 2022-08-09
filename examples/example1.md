@@ -1,5 +1,7 @@
 # Hello, World!
 
+This is a ***TEST***, to try out *parsing*.
+
 This is an example `markdown` document, for testing `rdom` with.
 
 ## Order list
@@ -16,7 +18,7 @@ This is an example `markdown` document, for testing `rdom` with.
 
 ## Image
 
-![Some image](https://www.example.com)
+![Some image](https://www.example.com "Image title!"){height:100%, width:100%}
 
 ## Code
 

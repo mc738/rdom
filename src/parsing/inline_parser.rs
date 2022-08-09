@@ -30,7 +30,7 @@ fn compare_look_ahead(s: &String, pattern: &str, i: usize) -> bool {
     }
 }
 
-fn read_until_char(s: &String, c: char, inclusive: bool, from: usize) -> (String, usize) {
+pub fn read_until_char(s: &String, c: char, inclusive: bool, from: usize) -> (String, usize) {
     let mut i = from;
 
     loop {
