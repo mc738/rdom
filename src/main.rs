@@ -1,4 +1,5 @@
 use rendering::html;
+use templating::mustache::MustacheParser;
 
 use crate::{
     core::formatting::Formatters,
@@ -11,8 +12,20 @@ use crate::parsing::block_parser::Input;
 pub mod core;
 pub mod parsing;
 pub mod rendering;
+pub mod templating;
 
 fn main() {
+    let template =
+        fs::read_to_string("/home/max/Projects/rdom/examples/test_template.mustache").unwrap();
+
+    let mut mustache_parser = MustacheParser::new(template);
+
+    let t = mustache_parser.run();
+
+    println!("{:?}", t);
+
+    println!("\n\n\n********************\n\n\n");
+
     //let t1 = "Hello, ***World!***".to_string();
 
     //let t2 = "How are you, `max`?".to_string();
