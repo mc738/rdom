@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt::format};
 
 struct ParsableInput {
     input: String,
@@ -7,7 +7,7 @@ struct ParsableInput {
     position: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MustacheToken {
     Unmodified(String),
     EscapedVariable(String),
@@ -35,6 +35,19 @@ pub struct MustacheData {
 
 pub struct MustacheParser {
     input: ParsableInput,
+}
+
+#[derive(Debug)]
+pub struct TokenCollection {
+    name: String,
+    inverted: bool,
+    tokens: Vec<TokenCollectionItem>,
+}
+
+#[derive(Debug)]
+pub enum TokenCollectionItem {
+    Token(MustacheToken),
+    InnerCollection(TokenCollection),
 }
 
 #[derive(Debug)]
@@ -262,9 +275,153 @@ impl MustacheParser {
 }
 
 impl MustacheTemplate {
+    pub fn collect(&self) -> TokenCollection {
+        collect_tokens("__main".to_string(), self.tokens.clone(), false)
+    }
+
     pub fn replace(&self, data: MustacheData) -> String {
         let mut result = String::new();
 
+        let mut scope = vec![data.values];
+
+        for i in 0..self.tokens.len() {
+            match &self.tokens[i] {
+                MustacheToken::Unmodified(s) => result.push_str(&s),
+                MustacheToken::EscapedVariable(s) => match scope.last().unwrap().get(s) {
+                    Some(v) => match v {
+                        MustacheValue::Scalar(sv) => result.push_str(sv),
+                        MustacheValue::Object(_) => {}
+                        MustacheValue::Array(_) => {}
+                        MustacheValue::Lamba() => {}
+                    },
+                    None => {}
+                },
+                MustacheToken::NonEscapedVariable(s) => match scope.last().unwrap().get(s) {
+                    Some(v) => match v {
+                        MustacheValue::Scalar(sv) => result.push_str(sv),
+                        MustacheValue::Object(_) => {}
+                        MustacheValue::Array(_) => {}
+                        MustacheValue::Lamba() => {}
+                    },
+                    None => {}
+                },
+                MustacheToken::SectionStart(s) => match scope.last().unwrap().get(s) {
+                    Some(v) => match v {
+                        MustacheValue::Scalar(_) => todo!(),
+                        MustacheValue::Object(ov) => {
+                            //scope.push(ov);
+                        }
+                        MustacheValue::Array(av) => {}
+                        MustacheValue::Lamba() => todo!(),
+                    },
+                    None => todo!(),
+                },
+                MustacheToken::InvertedSectionStart(_) => todo!(),
+                MustacheToken::SectionEnd(_) => {}
+                MustacheToken::Comment(_) => todo!(),
+                MustacheToken::Partial(_) => todo!(),
+                MustacheToken::SetDelimiter(_) => todo!(),
+            }
+        }
+
         result
+    }
+}
+
+impl TokenCollection {
+    pub fn print(&self, indent: String) {
+        println!(
+            "{} *** Scope name: {} (is inverted: {})",
+            indent, self.name, self.inverted
+        );
+        for i in 0..self.tokens.len() {
+            match &self.tokens[i] {
+                TokenCollectionItem::Token(t) => {
+                    println!("{}{:?}", indent, t)
+                }
+                TokenCollectionItem::InnerCollection(ic) => {
+                    ic.print(format!("{}    ", indent));
+                }
+            }
+        }
+        println!("{}*** End scope {}", indent, self.name)
+    }
+}
+
+fn process_object(values: HashMap<String, MustacheValue>, tokens: Vec<MustacheToken>) -> String {
+    let mut result = String::new();
+
+    result
+}
+
+fn process_array(values: Vec<MustacheValue>, tokens: Vec<MustacheToken>) -> String {
+    let mut result = String::new();
+
+    result
+}
+
+pub fn collect_tokens(name: String, tokens: Vec<MustacheToken>, inverted: bool) -> TokenCollection {
+    let mut inner_collection = Vec::<MustacheToken>::new();
+    let mut collected = Vec::<TokenCollectionItem>::new();
+    let mut scope_name: Option<String> = None;
+    let mut inner_inverted = false;
+
+    for i in 0..tokens.len() {
+        let token = &tokens[i];
+
+        match (&scope_name, token) {
+            (None, MustacheToken::Unmodified(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (None, MustacheToken::EscapedVariable(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (None, MustacheToken::NonEscapedVariable(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (None, MustacheToken::SectionStart(ssn)) => {
+                scope_name = Some(ssn.clone());
+            }
+            (None, MustacheToken::InvertedSectionStart(isn)) => {
+                scope_name = Some(isn.clone());
+                inner_inverted = true;
+            }
+            (None, MustacheToken::SectionEnd(_)) => todo!(),
+            (None, MustacheToken::Comment(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (None, MustacheToken::Partial(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (None, MustacheToken::SetDelimiter(_)) => {
+                collected.push(TokenCollectionItem::Token(token.clone()))
+            }
+            (Some(_), MustacheToken::Unmodified(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::EscapedVariable(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::NonEscapedVariable(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::SectionStart(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::InvertedSectionStart(_)) => {
+                inner_collection.push(token.clone())
+            }
+            (Some(sn), MustacheToken::SectionEnd(sen)) if sn == sen => {
+                collected.push(TokenCollectionItem::InnerCollection(collect_tokens(
+                    sn.clone(),
+                    inner_collection.clone(),
+                    inner_inverted,
+                )));
+                scope_name = None;
+                inner_collection.clear();
+            }
+            (Some(_), MustacheToken::SectionEnd(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::Comment(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::Partial(_)) => inner_collection.push(token.clone()),
+            (Some(_), MustacheToken::SetDelimiter(_)) => inner_collection.push(token.clone()),
+        }
+    }
+
+    TokenCollection {
+        name,
+        inverted,
+        tokens: collected,
     }
 }

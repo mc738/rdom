@@ -22,7 +22,10 @@ fn main() {
 
     let t = mustache_parser.run();
 
-    println!("{:?}", t);
+    let ct = t.collect();
+
+    ct.print("".to_string());
+    //println!("{:?}", ct);
 
     println!("\n\n\n********************\n\n\n");
 
