@@ -20,14 +20,16 @@ pub enum MustacheToken {
     SetDelimiter((String, String)),
 }
 
+#[derive(Debug)]
 pub enum MustacheValue {
     Scalar(String),
     Object(HashMap<String, MustacheValue>),
-    Array(Vec<MustacheValue>),
+    Array(Vec<HashMap<String, MustacheValue>>),
     Lamba(),
     // TODO implement lambas.
 }
 
+#[derive(Debug)]
 pub struct MustacheData {
     values: HashMap<String, MustacheValue>,
     // TODO implement partials.
@@ -280,51 +282,15 @@ impl MustacheTemplate {
     }
 
     pub fn replace(&self, data: MustacheData) -> String {
-        let mut result = String::new();
+        let tc = self.collect();
 
-        let mut scope = vec![data.values];
+        tc.process(&data.values)
+    }
+}
 
-        for i in 0..self.tokens.len() {
-            match &self.tokens[i] {
-                MustacheToken::Unmodified(s) => result.push_str(&s),
-                MustacheToken::EscapedVariable(s) => match scope.last().unwrap().get(s) {
-                    Some(v) => match v {
-                        MustacheValue::Scalar(sv) => result.push_str(sv),
-                        MustacheValue::Object(_) => {}
-                        MustacheValue::Array(_) => {}
-                        MustacheValue::Lamba() => {}
-                    },
-                    None => {}
-                },
-                MustacheToken::NonEscapedVariable(s) => match scope.last().unwrap().get(s) {
-                    Some(v) => match v {
-                        MustacheValue::Scalar(sv) => result.push_str(sv),
-                        MustacheValue::Object(_) => {}
-                        MustacheValue::Array(_) => {}
-                        MustacheValue::Lamba() => {}
-                    },
-                    None => {}
-                },
-                MustacheToken::SectionStart(s) => match scope.last().unwrap().get(s) {
-                    Some(v) => match v {
-                        MustacheValue::Scalar(_) => todo!(),
-                        MustacheValue::Object(ov) => {
-                            //scope.push(ov);
-                        }
-                        MustacheValue::Array(av) => {}
-                        MustacheValue::Lamba() => todo!(),
-                    },
-                    None => todo!(),
-                },
-                MustacheToken::InvertedSectionStart(_) => todo!(),
-                MustacheToken::SectionEnd(_) => {}
-                MustacheToken::Comment(_) => todo!(),
-                MustacheToken::Partial(_) => todo!(),
-                MustacheToken::SetDelimiter(_) => todo!(),
-            }
-        }
-
-        result
+impl MustacheData {
+    pub fn new(values: HashMap<String, MustacheValue>) -> MustacheData {
+        MustacheData { values }
     }
 }
 
@@ -345,6 +311,101 @@ impl TokenCollection {
             }
         }
         println!("{}*** End scope {}", indent, self.name)
+    }
+
+    pub fn process(&self, values: &HashMap<String, MustacheValue>) -> String {
+        let mut result = String::new();
+
+        for i in 0..self.tokens.len() {
+            match &self.tokens[i] {
+                TokenCollectionItem::Token(token) => match token {
+                    MustacheToken::Unmodified(v) => result.push_str(&v),
+                    MustacheToken::EscapedVariable(v) => match values.get(v) {
+                        Some(mv) => match mv {
+                            MustacheValue::Scalar(sv) => result.push_str(sv),
+                            MustacheValue::Object(_) => {}
+                            MustacheValue::Array(_) => {}
+                            MustacheValue::Lamba() => {}
+                        },
+                        None => {}
+                    },
+                    MustacheToken::NonEscapedVariable(v) => match values.get(v) {
+                        Some(mv) => match mv {
+                            MustacheValue::Scalar(sv) => {
+                                // TODO encode.
+                                result.push_str(sv);
+                            }
+                            MustacheValue::Object(_) => {}
+                            MustacheValue::Array(_) => {}
+                            MustacheValue::Lamba() => {}
+                        },
+                        None => {}
+                    },
+                    MustacheToken::SectionStart(_) => {
+                        // Should already be handled.
+                    }
+                    MustacheToken::InvertedSectionStart(_) => {
+                        // Should already be handled.
+                    }
+                    MustacheToken::SectionEnd(_) => {
+                        // Should already be handled.
+                    }
+                    MustacheToken::Comment(_) => {}
+                    MustacheToken::Partial(_) => todo!(),
+                    MustacheToken::SetDelimiter(_) => todo!(),
+                },
+                TokenCollectionItem::InnerCollection(ic) => {
+                    println!("*** {}", ic.name);
+
+                    match (ic.inverted, values.get(&ic.name)) {
+                        (true, None) => {
+                            result.push_str(&ic.process(&HashMap::new()));
+                        }
+                        (false, Some(mv)) => match mv {
+                            MustacheValue::Scalar(_) => {}
+                            MustacheValue::Object(ov) => {
+                                //let r = ic.process(ov);
+
+                                //match (r.chars().nth(0), r.chars().last()) {
+                                //    (Some('\n'), Some('\n')) => result.push_str(&r[1..r.len() - 1]),
+                                //    (Some('\n'), Some(_)) => result.push_str(&r[1..]),
+                                //    (Some(_), Some('\n')) => result.push_str(&r[..r.len() - 1]),
+                                //    _ => result.push_str(&r),
+                                //}
+
+                                result.push_str(&ic.process(ov));
+                            }
+                            MustacheValue::Array(av) => {
+                                for ov in av {
+                                    //  let r = ic.process(ov);
+
+                                    //  match (r.chars().nth(0), r.chars().last()) {
+                                    //      (Some('\n'), Some('\n')) => {
+                                    //          result.push_str(&r[1..r.len() - 1])
+                                    //      }
+                                    //      (Some('\n'), Some(_)) => result.push_str(&r[1..]),
+                                    //      (Some(_), Some('\n')) => result.push_str(&r[..r.len() - 1]),
+                                    //      _ => result.push_str(&r),
+                                    //  }
+
+                                    result.push_str(&ic.process(ov));
+                                    //result.push_str(r);
+                                }
+                            }
+                            MustacheValue::Lamba() => todo!(),
+                        },
+                        (false, None) => {
+                            //
+                        }
+                        (true, Some(_)) => {
+                            // Do nothing in inverted sections if data exists.
+                        }
+                    }
+                }
+            }
+        }
+
+        result
     }
 }
 

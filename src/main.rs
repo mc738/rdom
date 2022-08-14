@@ -4,8 +4,9 @@ use templating::mustache::MustacheParser;
 use crate::{
     core::formatting::Formatters,
     parsing::{inline_parser, processing},
+    templating::mustache::{MustacheData, MustacheValue},
 };
-use std::fs;
+use std::{collections::HashMap, fs};
 
 use crate::parsing::block_parser::Input;
 
@@ -26,6 +27,76 @@ fn main() {
 
     ct.print("".to_string());
     //println!("{:?}", ct);
+
+    let values: HashMap<String, MustacheValue> = vec![
+        (
+            "test_ver".to_string(),
+            MustacheValue::Scalar("Hello, World!".to_string()),
+        ),
+        (
+            "non_escaped".to_string(),
+            MustacheValue::Scalar("<h1>Test!</h1>".to_string()),
+        ),
+        (
+            "section".to_string(),
+            MustacheValue::Array(vec![
+                vec![
+                    (
+                        "section_title".to_string(),
+                        MustacheValue::Scalar("Section 1".to_string()),
+                    ),
+                    (
+                        "inner_section".to_string(),
+                        MustacheValue::Object(
+                            vec![(
+                                "deep_value".to_string(),
+                                MustacheValue::Scalar("lorem 1".to_string()),
+                            )]
+                            .into_iter()
+                            .collect(),
+                        ),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                vec![
+                    (
+                        "section_title".to_string(),
+                        MustacheValue::Scalar("Section 2".to_string()),
+                    ),
+                    (
+                        "inner_section".to_string(),
+                        MustacheValue::Object(
+                            vec![(
+                                "deep_value".to_string(),
+                                MustacheValue::Scalar("lorem 2".to_string()),
+                            )]
+                            .into_iter()
+                            .collect(),
+                        ),
+                    ),
+                ]
+                .into_iter()
+                .collect(),
+                vec![(
+                    "section_title".to_string(),
+                    MustacheValue::Scalar("Section 3".to_string()),
+                )]
+                .into_iter()
+                .collect(),
+            ]),
+        ),
+    ]
+    .into_iter()
+    .collect();
+
+    let data = MustacheData::new(values);
+
+    let result = t.replace(data);
+
+    println!("\n\n\n********************\n\n\n");
+
+    println!("{}", result);
 
     println!("\n\n\n********************\n\n\n");
 

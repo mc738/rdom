@@ -11,10 +11,14 @@ A test non escaped token.
 This is a test section:
 
 {{#section}}
+    {{section_title}}
     {{#inner_section}}
         {{deep_value}}
     {{/inner_section}}
     {{inner_value}}
+    {{^inner_section}}
+       [No data here.]
+    {{/inner_section}}
 {{/section}}
 
 {{^inverted_section}}
