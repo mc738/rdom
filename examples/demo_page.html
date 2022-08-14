@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>RDOM demo</title>
+
+  <link href='./css/style.css' rel='stylesheet'>
+
+
+  <script src='./js/index.js' defer></script>
+
+</head>
+
+<body>
+  <nav></nav>
+  <main>
+    <article>
+      <h1>Hello, World!</h1>
+      <p>This is a <span class='b i'>TEST</span>, to try out <span class='i'>parsing</span>.</p>
+      <p>This is an example <span class='code'>markdown</span> document, for testing <span class='code'>rdom</span>
+        with. This should all be one paragraph.</p>
+      <h2>Order list</h2>
+      <ol>
+        <li>Item 1</li>
+        <li>Item 2</li>
+        <li>Item 3</li>
+      </ol>
+      <h2>Unordered list</h2>
+      <ul>
+        <li>Item 1</li>
+        <li>Item 2</li>
+        <li>Item 3</li>
+      </ul>
+      <h2>Image</h2><img src='https://www.example.com' alt='Some image' title='Image title!' height='100%' width='100%'>
+      <h2>Code</h2>
+      <pre class='language-rust'><code>let msg = "Hello, World!";
+
+println!("{}", msg);</code></pre>
+      <h2>More!</h2>
+      <p>Hopefully this all works!</p>
+    </article>
+  </main>
+</body>
+
+</html>

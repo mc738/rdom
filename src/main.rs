@@ -128,6 +128,47 @@ fn main() {
 
     let rendered = html::render(blocks);
 
+    let pd: HashMap<String, MustacheValue> = vec![
+        (
+            "title".to_string(),
+            MustacheValue::Scalar("RDOM demo".to_string()),
+        ),
+        (
+            "styles".to_string(),
+            MustacheValue::Array(vec![vec![(
+                "url".to_string(),
+                MustacheValue::Scalar("./css/style.css".to_string()),
+            )]
+            .into_iter()
+            .collect()]),
+        ),
+        (
+            "scripts".to_string(),
+            MustacheValue::Array(vec![vec![(
+                "url".to_string(),
+                MustacheValue::Scalar("./js/index.js".to_string()),
+            )]
+            .into_iter()
+            .collect()]),
+        ),
+        (
+            "content".to_string(),
+            MustacheValue::Scalar(rendered.join("")),
+        ),
+    ]
+    .into_iter()
+    .collect();
+
+    let rt = fs::read_to_string("/home/max/Projects/rdom/examples/test_page.mustache").unwrap();
+
+    let mut pp = MustacheParser::new(rt);
+
+    let pt = pp.run();
+
+    let r = pt.replace(MustacheData::new(pd));
+
+    fs::write("/home/max/Projects/rdom/examples/demo_page.html", r);
+
     //println!("<article>\n    {}\n</article>", rendered.join("\n    "));
 
     //fs::write(

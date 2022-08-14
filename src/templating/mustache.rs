@@ -180,6 +180,20 @@ impl MustacheToken {
             None => todo!("Handle blank tokens"),
         }
     }
+
+    pub fn can_have_leading_new_line(&self) -> bool {
+        match self {
+            MustacheToken::SectionStart(_) => true,
+            MustacheToken::InvertedSectionStart(_) => true,
+            MustacheToken::Unmodified(_) => false,
+            MustacheToken::Comment(_) => true,
+            MustacheToken::Partial(_) => true,
+            MustacheToken::SetDelimiter(_) => true,
+            MustacheToken::EscapedVariable(_) => false,
+            MustacheToken::NonEscapedVariable(_) => false,
+            MustacheToken::SectionEnd(_) => true,
+        }
+    }
 }
 
 fn get_token_name(input: String) -> String {
@@ -244,9 +258,25 @@ impl MustacheParser {
                                     .unwrap_or_else(|| "".to_string()),
                             );
 
+                            /*if token.can_have_leading_new_line() {
+                                match self.input.get_char(pos - 1) {
+                                    Some(c) if c == '\n' => {
+                                        next = pos - 2;
+                                    }
+                                    _ => next = pos - 1,
+                                };
+
+                                match self.input.get_char(end_index + 2) {
+                                    Some(c) if c == '\n' => last_split = end_index + 3,
+                                    _ => last_split = end_index + 2,
+                                };
+                                //println!("*** pre {:?}", self.input.get_char(pos - 1));
+                                //println!("*** post {:?}", self.input.get_char(end_index + 2));
+                            }*/
+
                             tokens.push(MustacheToken::Unmodified(
                                 self.input
-                                    .get_slice(last_split, pos - 1)
+                                    .get_slice(last_split, pos)
                                     .unwrap_or_else(|| "".to_string()),
                             ));
                             tokens.push(token);
@@ -355,8 +385,6 @@ impl TokenCollection {
                     MustacheToken::SetDelimiter(_) => todo!(),
                 },
                 TokenCollectionItem::InnerCollection(ic) => {
-                    println!("*** {}", ic.name);
-
                     match (ic.inverted, values.get(&ic.name)) {
                         (true, None) => {
                             result.push_str(&ic.process(&HashMap::new()));
@@ -407,18 +435,6 @@ impl TokenCollection {
 
         result
     }
-}
-
-fn process_object(values: HashMap<String, MustacheValue>, tokens: Vec<MustacheToken>) -> String {
-    let mut result = String::new();
-
-    result
-}
-
-fn process_array(values: Vec<MustacheValue>, tokens: Vec<MustacheToken>) -> String {
-    let mut result = String::new();
-
-    result
 }
 
 pub fn collect_tokens(name: String, tokens: Vec<MustacheToken>, inverted: bool) -> TokenCollection {
